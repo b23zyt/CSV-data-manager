@@ -1,0 +1,3 @@
+LOAD lab2_multidata.csv
+LOOKUP ZWE
+EXIT

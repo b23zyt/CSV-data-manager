@@ -1,0 +1,100 @@
+PROJECT 3 DESIGN DOCUMENT: 
+
+CLASS DESIGN:
+Class 1: DataTree.cpp / DataTree.h
+    The purpose of this class is to manage and organize data from a dataset file for multiple countries. It acts as a container to store SeriesList objects (Project2), where each SeriesList stores all the series of the country in a linked list. The class also includes functions for listing the name and code of the country and the Series Names for all time series, finding the range of a given series among all countries, building a special binary tree based on a series code, as well as searching and deleting some of the information stored in the binary tree. 
+
+    Functions & Variables in DataTree
+    a. Private Members
+        1. SeriesList* countries[512];
+            Rationale: Stores the objects of SeriesList in a fixed-size array.
+        2. int countryIndex
+            Rationale: Stores the number of elements in countries.
+        3. double seriesMin
+            Rationale: Stores the minimum mean value among countries by the given series. Note if all the data of a country are invalid, then its mean is 0.
+        4. double seriesMax
+            Rationale: Stores the address of the country's first time series. (Head of a linked list)
+        5. TreeNode* root;
+            Rationale: The root of the binary tree.
+        6. std::string treeSeriesCode;
+            Rationale: The seriesCode on which the tree is built.
+    
+    b. Private Helper Functions in DataTree
+        1. TreeNode* buildTree(std::string seriesCode, double min, double max, int indexes[], int nodeStringNumber);
+            Rationale: A recursive private helper function to build te tree. Indexes[] stores the index of the country's name in the countries array in this node, in order access the information of SeriesList objects in the tree.
+        2. void getMinAndMax(std::string seriesCode);
+            Rationale: A helper function for building the tree that is called in the based function of build. It updates the minimum and maximum values of the mean data for all countries of this code.
+            (Updates seriesMin and seriesMax)
+        3. bool allEqual(std::string seriesCode, int indexes[], int count);
+            Rationale: A helper function for building the tree that is called in both the base function and on each recursive call. Check whether the countries in that node have the exact same mean (within a tolerance value). If yes, then the node has no children.
+        4.  void printLess(double value, TreeNode* node);
+            void printGreat(double value, TreeNode* node);
+            void printEqual(double value, TreeNode* node);
+            Rationale: Three recursive helper functions for the FIND command that are used to find and print the names of all countries whose serial means satisfy the input operation. One helper function is for one operation.
+        5.  TreeNode* deleteLeftHelper(std::string name,  TreeNode* node);
+            TreeNode* deleteRightHelper(std::string name, TreeNode* node);
+            Rationale: 2 recursive helper functions for the DELETE command that are used to delete all the country names in every node in the binary tree. One handles the left subtree and the other handles the right subtree.
+        6.  void leftLimit(TreeNode* node);
+            void rightLimit(TreeNode* node);
+            Rationale: Two helper recursive helper functions for the LIMITS command that are used to find and output  country names with the smallest mean value or largest mean value. Note that this is not just to find the leftmost node and rightmost node since the tree is not a BST. One function handles to smallest case and the other handles the greatest case.
+        7. void postorderDelete(TreeNode* curr);
+            Rationale: Helper function to delete nodes in the tree through postorder traversal.
+
+    c. Private Functions in DataTree
+        1. DataTree();
+            Rationale: Constructor of the class. Assign members to the class with their initial value.
+        2. ~DataTree();
+            Rationale: Destructor, used to deallocate memory used in the DataTree class.
+        3. void load(std::string fileName);
+            Rationale: Loads all time series for multiple countries from the CSV file and stores them in a country-level array. Suppose that there are always less than 512 countries in the CSV file.
+        4. void list(std::string countryName);
+            Rationale: Prints the name and code of the country and the Series Names for all time series in the same order in the dataset. Calls list() of the SeriesList object in this function.
+        5. void range(std::string seriesCode);
+            Rationale: output the minimum and maximum values for the given series. Discards all invalid data in this function.
+        6. void build(std::string seriesCode);
+            Rationale: Build a unique binary tree based on the requirements in the manual.
+        7. void find(double mean, std::string operation);
+            Rationale: Finds and outputs the names of the countries whose values satisfy the given operation. 
+        8.  void deleteName(std::string name);
+            Rationale: Find all the nodes in the tree that contain the input countryName and remove the name from that node.
+
+Class 2: TreeNode
+    The Node class of the binary tree
+    Each node contains the following information:
+    1. double minRange: The minimum value of countries' data in the node.
+    2. double maximum: The maximum value of countries' data in the node.
+    3. std::string* names: The array of countries in the node. (The most important data of the node)
+    4. int storedCountryIndex[512]: The country's index in 'countries' array.
+    5. TreeNode* left: The pointer to the node's left subtree.
+    6. TreeNode* right: the pointer to the node's right subtree.
+    7. Constructor and Destructor
+   
+Class 3: SeriesList
+    Copied from Project2, refer to project2's design document. Add one new function.
+
+    new function 1: void SeriesList::newLoad(std::string lines[], int lineCount):
+        Rationale: Creates a linked list of TimeSeries based on lines[].
+
+Class 4: TimeSeries: 
+    Copied from Project1, refer to project1's design document. 
+
+Main: Call the functions in DataTree based on input commands 
+    
+ALTERNATIVES AND JUSTIFICATION
+1. Modification on the Load function
+    Initially, my plan was to directly reuse the load() function from the previous project In this way, the new class would read the CSV and each time a new country was detected, the load() function from SeriesList would be called to load that country's data. However, after testing this approach, I found that the loading process was extremely slow. This is because SeriesList::load() itself needed to read the entire file again for each country.
+    To address this problem, I modified the logic to read the file only once. As the file is read, all rows belonging to the same country are temporarily stored in an array. Once a new country is detected, the array containing the previous country’s data is passed into the 'new load' function in SeriesList, which then creates the linked list for that country.
+    JUSTIFICATION: The old approach had a time complexity of O(N²) because the file was being repeatedly scanned. The new approach reduces the time complexity to O(N) by ensuring that the file is read only once.
+
+2. Modification on building the tree.
+    After successfully building the binary tree, I encountered a problem that I was unable to access the country information stored in each node of the tree. This was because the node itself only stored the country name, but cannot access the corresponding SeriesList object stored in the countries array.
+    To solve this, I added an array in the Node class to store the indexes of all countries(stored in the node) in the countries array. Then I can easily access all the necessary information about each country, such as their mean values.
+
+3. Improvements on bool allEqual()
+    Initially, my algorithm for allEqual was similar to the range function, where I ignored all missing values. However, after finding that invalid data is represented as 0, I modified this function to treat all invalid data as 0 instead of skipping them.
+
+3. RUNTIME ANALYSIS
+LIMITS command: 
+    Best case: The best case happens when the tree is balanced, which means that the number of countries less than the mean value of the median value of the node is roughly equal to the number of countries greater than the mean at every node in the mean. In this case, the height of the tree is O(log(NUM_NODES)), meaning the best-case runtime is O(log(NUM_NODES)).
+
+    Worst case: The worst case happens when the tree is extremely imbalanced, which occurs when at each node, only one country has a value below the median, and the other countries are all larger (or vice versa). In this scenario, the height of the tree becomes equal to the number of countries. Since in this case, the number of nodes is equal to 2x the number of countries, the height of the tree is equal to half of the number of nodes in the tree, meaning the worst-case runtime is O(NUM_NODES).

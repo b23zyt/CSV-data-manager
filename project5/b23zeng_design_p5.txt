@@ -1,0 +1,44 @@
+PROJECT 5 DESIGN DOCUMENT: 
+
+CLASS DESIGN:
+Class 1: CountryGraph.cpp / CountryGraph.h
+    Purpose: This class has a data structure that stores countries and all their relationships using a graph. It uses 2 arrays where the first array (keys) stores a list of countries and the second array (edges) stores a list of edges(the EdgeList object). Each edge stores a list of information like the target country, the relationship type a threshold value, the array of indexes that the country connect to and many other information. Note that both arrays are implemented as hash tables, where the index is determined using the country code in the country object.
+    The class allows to update a tuple of relationships by using a binary search tree to find all satisfied countries. It also has series a graph search operation including finding all adjacent countries of a given country, checking if there exist a path between 2 countries and finding all relationships between two countries.
+
+Class 2: EdgeList.cpp / EdgeList.h
+    Purpose: The EdgeList is used to keep track of all relationships between countries. It consists of a linked list of edges nodes. The Node class is declared inside the EdgeList class, where each node contains a tuple of relationships, all target country indexes and the pointer to the next node. The linked list structure provides a quick way to find and update relationships.
+
+Class 3: Hashing.cpp / Hashing.h
+    Mostly copied from previous projects, refer to project4 design document
+    New Features: Change the FIND function such that it won't output the countryNames that satisfy to the relationship (like what it did in project 3 and 4). Instead, it will push all satisfied country codes into the vector that passed by reference through it.
+
+Class 4: TreeNode
+    Mostly copied from previous projects, refer to project3's design document. Add one new function.
+    New Features: Update the Node variables such that each node stores the all the countryCodes of all the country in the node. It only stores countryNames before.
+
+Class 5: SeriesList
+   Copies from previous projects
+   
+
+Class 4: TimeSeries: 
+    Copied from previous projects, refer to project1's design document. 
+
+Main Function: Call the functions in CountryGraph based on input commands.
+    
+ALTERNATIVES AND JUSTIFICATION
+1. The biggest optimization I made is to change my updateEdge function from linear search to binary search. My previous design was to iterate through the entire hash table and find all countries satisfied the input relationship. However, after attending the lab on Mae 29, I realized that I have to use the binary search tree I built in project3 to find all countries. I changed my FIND function such that it inserts all the code of satisfied countries into a vector, and then use the LOOKUP function to get all indexes and update the edges between indexes in the graph.
+
+2. My design idea for the graph is to implement adjacency lists using 2 arrays that share the same index. The first array is a hash table that stores all country objects. Every entry in the second array stores a list of relationships for the country object and all matching countries for each relationship, with the index corresponding to the first array. The advantage of this design is that I can take advantage of the structures I wrote earlier, such as the hash operations I implemented in project4.
+
+
+3. RUNTIME ANALYSIS
+ADJACENCY command: 
+The worst case runtime of my ADJACENCY command is O(V*E), where E is the number of vertices(countries) and E is the number of edges(relationships). In my implementation, my process involves two steps:
+1. I first used a linear search to find the index of the country object stored in the 'keys' array. This search takes O(V) time in the worst case.
+2.  Once the index is found, I then iterate through the edgeList object stored in the second array (which corresponds to the same index as the country in the 'keys' array). The edgeList contains relationships, stored as a linked list. To find all countries adjacent to the given country, I must traverse the entire linked list of relationships. To find all countries that are adjacent to, I need to iterate through the entire list to check all relationships, which takes O(E) if there are E relationships. The worst case here is each relationship contains all the countries (V countries). Therefore, it takes me O(V*E) to insert all the countries into a set. The worst case runtime in this step is O(V*E).
+Therefore the worst case runtime of the ADJACENCY command is O(V+(V*E)) = O(V*E).
+
+References: 
+[1]GeeksforGeeks, "Set insert() function in C++ STL," https://www.geeksforgeeks.org/set-insert-function-in-c-stl/. [Accessed: 27-Mar-2025].
+[2]GeeksforGeeks, "Different ways to iterate over a set in C++," https://www.geeksforgeeks.org/different-ways-to-iterate-over-a-set-in-c/. [Accessed: 27-Mar-2025].
+

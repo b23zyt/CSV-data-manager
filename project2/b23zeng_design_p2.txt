@@ -1,0 +1,77 @@
+PROJECT 2 DESIGN DOCUMENT: 
+
+CLASS DESIGN:
+Class 1: SeriesList
+    The purpose of this class is to manage and organize all the time series of a given country from the dataset. It includes functions for loading all time series data for a given country, listing all time series of the country, deleting an existing series, finding the first series with the biggest mean value, as well as adding, updating and printing the data of any series of the country. 
+
+    Functions & Variables in SeriesList
+    a. Private Members
+        - std::string countryName;
+            Rationale: Stores the country name of the series. Printed in the 'list' function.
+        - std::string countryCode;
+            Rationale: Stores the country code of all codes. Printed in the 'list' function.
+        - TimeSeries* head;
+            Rationale: Stores the address of the country's first time series. (The head of a linked list)
+        -std::string fileName = "lab2_multidata.csv";
+            Rationale: The name of the dataset.
+
+    b. Public Functions
+        - SeriesList();
+            Rationale: Constructor of the class. Assign members to the class with their initial value.
+        - ~SeriesList();
+            Rationale: Destructor, used to deallocate memory used in the SeriesList class.
+        - bool load(std::string country);
+            Rationale: Loads all time series for a country from the CSV file. Suppose the input is always a valid country. Return true if the country exists in the dataset.
+        - void list();
+            Rationale: Prints the name and code of the country and the Series Names for all time series in the same order in the dataset. Called getSeriesName() of the timeSeries object in this function.
+        - bool add(std::string code, int year, double data);
+            Rationale: Adds (year, data) to the series with the input code. Returns success if no data exists in that year and data had successfully added, returns false otherwise. Called 
+        - bool update(std::string code, int year, double data);
+            Rationale: Updates (year, data) to the series with the input code. Return success if the year doesn't exist in the series and data has been updated successfully, return false otherwise. 
+
+    c. Getters and Setters
+        void setCountryName(std::string value);
+        std::string getCountryName() const;   
+        void setCountryCode(std::string value);
+        std::string getCountryCode() const;
+        I defined and declared them at the start of the project, but I never used them...
+
+Class 2: TimeSeries
+    Copy from Project1, used for printing, adding and updating data in a single series in this project. It includes several new variables and functions to help SeriesList.
+
+    New features compared to project1: 
+    1. void loadSeries(int year, double data, int index);
+        Rationale: A new loading function. Store the year and data in the given index to their arrays. 
+    2. TimeSeries* next;
+        Rationale: Stores the address of the next series in the list. Allows to perform traversal between series.
+    3. void setSeriesName(std::string value); std::string getSeriesName() const; void setSeriesCode(std::string value); std::string getSeriesCode() const;
+        Rationale: Allows to set and get series code and name in the SeriesList class.
+
+Main: Call the functions in SeriesList based on input commands 
+    
+ALTERNATIVES AND JUSTIFICATION
+
+1. Decision about selecting a linked list as the data structure to use rather than an array.
+    JUSTIFICATION: I used a linked list to store an arbitrary number of timeSeries object of a given country in SeriesList class. It would be a good choice for the following reasons: 
+        1. Since the number of series is not fixed, the linked list allows to dynamically allocate memory for new series. It doesn't require resizing when the list grows. 
+        2. The runtime of inserting and deleting a node at the front of the linked list is O(1), more efficient compared to arrays. In addition, by introducing a tail pointer, It can reduce the runtime of inserting or deleting a node at the end from O(n) to O(1).
+        3. Each node in the list is an object of TimeSeries, so I can easily access to the methods in TimeSeries.cpp using '->' or '*()'.
+
+2. Read data in main.
+    I initially only used 'cin' to read the input country and it works for countries with only one word such as Canada. But when I tried a country with more than one words like American Samoa. The output I got is 'failure'. I asked Chatgpt but it didn't give me an answer that could address this issue. I finally found the answer to this problem on stackoverflow.
+
+3. Storing country name and code
+    Problem: I initially updated countryName and countryCode when reading every line from the csv file, which resulted in countryName and countryCode always storing the last country name and code in the file, causing the wrong country name/code to be printed during the LIST command.
+    Solution: I introduced 2 new variables countryNameTemp and countryCodeTemp. I updated them with the series name and code in each loop. When a match is found between countryNameTemp and the input, I assign these temp variables to countryName and countryCode. Therefore, countryName and countryCode only gets updated when the input country matches with a country in the csv file.
+
+3. RUNTIME ANALYSIS
+DELETE command: 
+    The DELETE command calls the deleteSeries function in the SeriesList class. Inside this function, a while loop iterates through the list of time series, updating the current pointer to the next series on each iteration. The loop continues until current = nullptr. So the worst-case number of iteration is equal to the number of time series, which is N. Since each iteration involves constant time, the overall runtime for the DELETE command in my project is O(N). Additionally, since some implementations could result to a total runtime of O(N+m) and (N+m) > N, the runtime can be considered as O(N+m). Q.E.D.
+
+ADD command: 
+    The ADD command calls the add function in SeriesList. Similar to deleteSeries(), the add function iterates through the time series list, making at most N iterations. Inside the loop, the add() function in the TimeSeries class calls the add function of the TimeSeries class.
+
+    In the add() function of the TimeSeries class, the worst-case scenario occurs when the year to be added is the last year in the years array. In this case, we need to traverse to the end of the year array, resulting a runtime of O(m), where m is the number of data points in each time series. Therefore, the worst-case runtime for ADD occurs when both the series and the year to be added are the last ones in the list and array, resulting a combined time complexity of O(N + m). Q.E.D.
+
+
+

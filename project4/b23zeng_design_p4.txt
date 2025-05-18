@@ -1,0 +1,45 @@
+PROJECT 4 DESIGN DOCUMENT: 
+
+CLASS DESIGN:
+Class 1: Hashing.cpp / Hashing.h
+    The new purpose of this class is to manage and organize data from a dataset file for multiple countries. It acts as a hash table to store SeriesList objects (from Project2), where each SeriesList stores all the series of the country in a linked list. The purpose for using a hash table is to enable O(1) operation in searching and removing elements in the 'countries' array.
+    In addition, this class includes functions for listing the name and code of the country and the Series Names for elements inside the hash table, as well as finding the range of a given series , building a series binary tree, and performing tree operations based on the hash table.
+
+    New Functions & Variables in Hashing (new functions compared to DataTree)
+        a. Private Functions   
+            1. int primaryHash(std::string code);
+                Rationale: The primary Hashing function to get the initial hash code.
+            2. int secondaryHash(std::string code);
+                Rationale: A secondary hashing function that enable probing, avoid two different codes allocate in the same index in 'countries' array.
+        b. Public Functions
+            1. void lookup(std::string code);
+                Rationale: It Outputs the country's index and the number of hashing steps required to find the index base on its country code. 
+            2. void insert(std::string code, std::string fileName);
+                Rationale: It first finds the country in the file based on the two inputs, then store the country inside the hash table by using the two hashing functions to find its index.
+            3. void remove(std::string code);
+                Rationale: Remove the country from the hash table by setting the country's DELETED member to true, indicting that the country in deleted. 
+
+Class 2: SeriesList
+    New Member:
+    DELETED: Used to determine if the country has been removed from the hash table. Initialize with DELETED = 'false', assign it to 'true' if the country is removed.
+   
+Class 3: TreeNode
+    Copied from Project3, refer to project3's design document. Add one new function.
+
+Class 4: TimeSeries: 
+    Copied from Project1, refer to project1's design document. 
+
+Main Function: Call the functions in Hashing based on input commands.
+    
+ALTERNATIVES AND JUSTIFICATION
+1: Decision on how to remove an entry in the hash table. 
+Since I am using the probing approach in the hash table, I cannot simply mark the deleted entries as NULL as this would cause issue during insertion and LOOKUP. Two solutions come to mind, one is to use an address that will never be used to indicate the deleted entry, and the other is to create a new member in the country object to indicate whether it has been deleted. I chose the second one because it seemed easier to implement and avoid more memory issues.
+
+2: Problem and solution: During the load and insert functions, previously deleted entries in the hash table caused issues in mapping new entries. Initially, if a deleted entry matched the country being loaded, the program simply set its DELETED to false. However, this approach failed to ensure that the first index was used. My solution was to track the first encountered deleted index and prioritize inserting new entries there rather than just reactivating the first matching deleted entry.
+
+
+3. RUNTIME ANALYSIS
+LOOKUP command: 
+The average-case runtime is O(1) when we assume the number of collision is O(1). The reason is the number of steps taken in LOOKUP is equal to the number of collision, this means the average case runtime of LOOKTIME is O(1)
+The worst case runtime is O(N) since there are at most N collision with N countries in the 'countries' array.
+    

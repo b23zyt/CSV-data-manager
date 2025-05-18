@@ -1,0 +1,68 @@
+PROJECT 1 DESIGN DOCUMENT
+
+CLASS DESIGN: The class I implemented in project1 is Timeseries  
+1.TimeSeries
+Rationale: It is designed to manage and process data from a CSV file by encapsulating Series Name, Series Code and two dynamically allocated arrays. It includes functions for loading data, as well as printing, adding, and updating data inside dynamically allocated arrays. It also allows calculating the mean value of the data, checking if the series is monotonic and finding the slope and y-intercept.
+
+Functions in TimeSeries:
+a. Private Members
+    - std::string seriesName
+        Rationale: Store series name otherwise I cannot import the following data.
+    - std::string seriesCode;
+        Rationale: Same as seriesCode. Note: The two variables are not used in this project
+    - int* years;
+        Rationale: A dynamically allocated array that stores the corresponding year of each data point.
+    - double* data;
+        Rationale: A dynamically allocated array that stores the data point from the CSV file.
+    - int capacity; 
+        Rationale: Stores the capacity of years array and data array.
+    - int current;
+        Rationale: Store the current amount of elements in the two arrays.
+
+b. Private Helper Functions
+    - int checkYear(int year);
+        Rationale: Check if a year already exists in the years array. Return -1 if not. If yes, return the index of the year inside years array.
+    - void resize(bool increase);
+        Rationale: Adjust the capacity of any array. Double the capacity if current = capacity. Halve capacity if current = capacity/4.
+    
+c. Public Functions:  
+    - TimeSeries();
+        Rationale: Constructor of the class. Assign members to the class with their initial value
+    - ~TimeSeries();
+        Rationale: Destructor, used to deallocate memory used in the class.
+    - bool loadFromFile(std::string fileName);
+        Rationale: Load non-missing data from a CSV file to private members. Returns true if the file name is valid.
+    - void print();
+        Rationale: Print data stored inside two dynamically allocated arrays by the form (year, data) () ...
+    - bool add(int year, double value);
+        Rationale: Add a pair of data to the two arrays. Returns true if the process is successful, returns false otherwise
+    - bool update(int year, double value);
+        Rationale: Update a year's data. Returns true if the process is successful, returns false otherwise
+    - double mean();
+        Rationale: Return the mean value of all years' data
+    - bool isMonotonic();
+        Rationale: Return true if the data are in ascending or descending order chronologically
+    - void bestFit(double &m, double &b);
+        Rationale: Return slope and y-intercept by assuming data as dependent variable and year as independent variable
+    - void setCurrent(int value) & int getCurrent() const;
+        Rationale: Getter and Setter of the private member 'current'. 
+
+Main: Call the functions in TimeSeries based on input commands 
+
+
+ALTERNATIVES AND JUSTIFICATION
+RESIZE: My initial idea to resize the array is by creating double and halve functions. But then I noticed that I could make the code cleaner by combing these two functions into one called 'resize' by giving a parameter to decide whether to double or halve.
+
+LOAD: My decision was not to store the missing data (-1) in the array because I don't want to increase the allocated memory.
+
+Update: My initial design for handling input value = -1 is to return 'failure'. Then I realized it could mean deleting the data. I wrote two alternatives for deletion and selected the one that uses less memory.
+
+Helper Function int checkYear: It checks whether the input year exists in Years array. ADD and UPDATE functions use this function to decide if they need to add/update new data or not.
+
+Private member current: I initially stored the current index in the array but then changed it to store the number of VALID data since I need to get the size of data in main. That's also the reason for creating getter and setter for 'current'.
+
+
+RUNTIME ANALYSIS
+UPDATE command: The worst case scenario occurs when the year I want to update is the last year in the years array, in which I need to travel through the entire years array to verify its existence. The runtime in this case is O(n). Notice that if year matches and the input value is -1, there's another for loop iterate through the entire data array to delete the data inside it, which takes another O(n) of time complexity. However, the runtime is still O(n) since O(n) + O(n) = O(n). Therefore, the worst case runtime is O(n). Q.E.D.
+
+MONOTONIC command: The best case occurs when the data array is empty, in which the variable 'current' is equation to 0. In this case, 'isMonotonic' returns 'false' back to 'main' without iterating through the whole data array. Then 'main' checks 'current' again and print 'failure' when 'current' is equation to 0. Therefore, the runtime here is O(1) since the program only execute constant lines of code. Q.E.D.
